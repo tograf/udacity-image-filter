@@ -34,22 +34,24 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
      let urlToFilter = req.query.image_url;
      // check if url iss available
      if (!urlToFilter) {
-       res.status(400).send("Please provide Image url: /filteredimage?image_url={{URL}}")
+       res.status(400).send("Please provide Image url: /filteredimage?image_url={{URL}}");
      } 
 
-     // get the filtered image
-    let result = await filterImageFromURL(urlToFilter);
-    console.log(result);
-
-    res.on('finish', function() {
-      console.log(`Deleting File: ${result}`);
-      let filesToDelete = [result];
-      deleteLocalFiles(filesToDelete);
-    })
-
-     res.sendFile(result);
-    } 
-  );
+    // get the filtered image, send and delet it
+    try {
+      let result = await filterImageFromURL(urlToFilter);
+      console.log(`sending File ${result}`);
+      res.sendFile(result, () => {
+        console.log(`Deleting File: ${result}`);
+        let filesToDelete = [result];
+        deleteLocalFiles(filesToDelete);
+      });
+    }
+    catch (err) {
+      res.status(400).send(`Could not process: ${urlToFilter}`);
+    }
+    
+  });
 
   //! END @TODO1
   
